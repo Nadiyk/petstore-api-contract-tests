@@ -2,7 +2,7 @@
 
 Contract test pack for the `POST /pet` endpoint of the public [Swagger PetStore API](https://petstore.swagger.io/). The goal was to check how the API validates incoming data and whether it follows its own contract (Swagger specification).
 
-**Result:** 15 tests, **4 critical bugs** (the server returns `500 Server Error` instead of `400 Bad Request`) and **5 validation issues**.
+**Result:** 15 tests, 59 automated checks, **3 critical bugs** (the server returns `500 Server Error` instead of `400 Bad Request`) and **6 validation issues**.
 
 ## What is tested
 
@@ -29,7 +29,7 @@ Each request has automated checks (Postman test scripts):
 | N2 | `name` is a number | 400 | 200 (converted to string) | ⚠️ Issue |
 | N3 | Missing `photoUrls` | 400 | 200 (empty array added) | ⚠️ Issue |
 | N4 | `photoUrls` is a string | 400 | **500** | 🔴 Bug |
-| N5 | Invalid `status` value | 400 | **500** | 🔴 Bug |
+| N5 | Invalid `status` value | 400 | 200 (invalid value accepted) | ⚠️ Issue |
 | N6 | `name` is `null` | 400 | 200 (treated as missing) | ⚠️ Issue |
 | N7 | `name` is an array | 400 | **500** | 🔴 Bug |
 | N8 | `name` is an object | 400 | **500** | 🔴 Bug |
@@ -44,13 +44,12 @@ Each request has automated checks (Postman test scripts):
 | Bug | Severity | Description |
 |---|---|---|
 | BUG-1 (N4) | Critical | `photoUrls` sent as a string instead of an array causes `500 Server Error`. Expected `400 Bad Request` with a clear validation message. |
-| BUG-2 (N5) | Critical | An invalid `status` value (not `available`, `pending` or `sold`) causes `500 Server Error` instead of `400`. |
-| BUG-3 (N7) | Critical | `name` sent as an array causes `500 Server Error` instead of `400`. |
-| BUG-4 (N8) | Critical | `name` sent as an object causes `500 Server Error` instead of `400`. |
+| BUG-2 (N7) | Critical | `name` sent as an array causes `500 Server Error` instead of `400`. |
+| BUG-3 (N8) | Critical | `name` sent as an object causes `500 Server Error` instead of `400`. |
 
 **Why it matters:** a 500 error means the server crashed on user input. The client gets no explanation of what is wrong, and this can hide deeper problems with input handling.
 
-**Validation issues:** the API accepts requests without the required fields `name` and `photoUrls` (N1, N3, N6), silently converts wrong data types (N2) and has no maximum length for `name` (E2). This does not match the Swagger specification, where `name` and `photoUrls` are marked as required.
+**Validation issues:** the API accepts requests without the required fields `name` and `photoUrls` (N1, N3, N6), silently converts wrong data types (N2), accepts a `status` value outside the allowed list `available`, `pending`, `sold` (N5) and has no maximum length for `name` (E2). This does not match the Swagger specification, where `name` and `photoUrls` are marked as required.
 
 ## How to run
 
@@ -65,9 +64,9 @@ npm install -g newman
 newman run PetStore_Contract_Tests.postman_collection.json
 ```
 
-Tests P1–P2 and E1–E5 should pass. Tests for N1–N8 are expected to fail: each failure shows a place where the API breaks its contract.
+Tests P1–P2 and E1–E5 should pass. Tests for N1–N8 are expected to fail: each failure shows a place where the API breaks its contract. Last run: 59 checks, 48 passed, 11 failed, 0 errors.
 
-> Note: PetStore is a public demo API, so its behaviour can change over time. The results above were recorded in January 2026.
+> Note: PetStore is a public demo API, so its behaviour can change over time. The tests were first run in January 2026 and re-run on 29 October 2026. Between the two runs N5 changed: in January an invalid `status` caused `500 Server Error`, in October the API accepted it with `200 OK`. The table shows the October results. Regression runs like this are exactly what catches such changes.
 
 ## Tools
 Postman · Newman · REST API · JSON · contract testing · test design techniques (equivalence partitioning, boundary values)
