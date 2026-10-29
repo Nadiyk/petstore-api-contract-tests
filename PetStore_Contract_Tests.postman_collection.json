@@ -1,0 +1,728 @@
+{
+  "info": {
+    "name": "PetStore API - Contract Tests (POST /pet)",
+    "description": "Contract test pack for POST /pet of the Swagger PetStore API: 2 positive, 8 negative and 5 edge-case tests. Found 4 critical bugs (500 Server Error instead of 400) and 5 validation issues. Author: Nadiia Hodovanets.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Positive",
+      "item": [
+        {
+          "name": "P1 - Baseline Valid Pet",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response has numeric id\", () => pm.expect(pm.response.json().id).to.be.a(\"number\"));",
+                  "pm.test(\"photoUrls is an array\", () => pm.expect(pm.response.json().photoUrls).to.be.an(\"array\"));",
+                  "pm.test(\"Name is returned unchanged\", () => pm.expect(pm.response.json().name).to.eql(\"Buddy\"));",
+                  "pm.test(\"Response time is below 3000 ms\", () => pm.expect(pm.response.responseTime).to.be.below(3000));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Buddy\",\n  \"photoUrls\": [\n    \"https://example.com/photo.jpg\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/pet",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pet"
+              ]
+            },
+            "description": "Positive: minimal valid request with required fields only."
+          },
+          "response": []
+        },
+        {
+          "name": "P2 - Full Valid Pet",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response has numeric id\", () => pm.expect(pm.response.json().id).to.be.a(\"number\"));",
+                  "pm.test(\"photoUrls is an array\", () => pm.expect(pm.response.json().photoUrls).to.be.an(\"array\"));",
+                  "pm.test(\"Name is returned unchanged\", () => pm.expect(pm.response.json().name).to.eql(\"Max\"));",
+                  "pm.test(\"Response time is below 3000 ms\", () => pm.expect(pm.response.responseTime).to.be.below(3000));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": 12345,\n  \"category\": {\n    \"id\": 1,\n    \"name\": \"Dogs\"\n  },\n  \"name\": \"Max\",\n  \"photoUrls\": [\n    \"https://example.com/photo1.jpg\",\n    \"https://example.com/photo2.jpg\"\n  ],\n  \"tags\": [\n    {\n      \"id\": 1,\n      \"name\": \"friendly\"\n    },\n    {\n      \"id\": 2,\n      \"name\": \"trained\"\n    }\n  ],\n  \"status\": \"available\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/pet",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pet"
+              ]
+            },
+            "description": "Positive: complete request with all optional fields."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Negative",
+      "item": [
+        {
+          "name": "N1 - Missing Name",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Known issue: API accepts invalid data. By contract it should return 400.",
+                  "pm.test(\"Server does not crash (no 5xx)\", () => pm.expect(pm.response.code).to.be.below(500));",
+                  "pm.test(\"Contract: invalid data should be rejected with 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Response time is below 3000 ms\", () => pm.expect(pm.response.responseTime).to.be.below(3000));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"photoUrls\": [\n    \"https://example.com/photo.jpg\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/pet",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pet"
+              ]
+            },
+            "description": "Negative: required field 'name' is missing. Expected 400, actual 200 OK (no validation)."
+          },
+          "response": []
+        },
+        {
+          "name": "N2 - Wrong Type Name (number)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Known issue: API accepts invalid data. By contract it should return 400.",
+                  "pm.test(\"Server does not crash (no 5xx)\", () => pm.expect(pm.response.code).to.be.below(500));",
+                  "pm.test(\"Contract: invalid data should be rejected with 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Response time is below 3000 ms\", () => pm.expect(pm.response.responseTime).to.be.below(3000));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": 12345,\n  \"photoUrls\": [\n    \"https://example.com/photo.jpg\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/pet",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pet"
+              ]
+            },
+            "description": "Negative: 'name' is a number. Expected 400, actual 200 OK (auto-converted to string)."
+          },
+          "response": []
+        },
+        {
+          "name": "N3 - Missing photoUrls",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Known issue: API accepts invalid data. By contract it should return 400.",
+                  "pm.test(\"Server does not crash (no 5xx)\", () => pm.expect(pm.response.code).to.be.below(500));",
+                  "pm.test(\"Contract: invalid data should be rejected with 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Response time is below 3000 ms\", () => pm.expect(pm.response.responseTime).to.be.below(3000));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"TestPet\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/pet",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pet"
+              ]
+            },
+            "description": "Negative: required field 'photoUrls' is missing. Expected 400, actual 200 OK (empty array added)."
+          },
+          "response": []
+        },
+        {
+          "name": "N4 - Wrong Type photoUrls (string)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Known bug: API returns 500 instead of 400 for invalid data type.",
+                  "pm.test(\"Server does not crash (no 5xx)\", () => pm.expect(pm.response.code).to.be.below(500));",
+                  "pm.test(\"Contract: invalid data should be rejected with 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Response time is below 3000 ms\", () => pm.expect(pm.response.responseTime).to.be.below(3000));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"TestPet\",\n  \"photoUrls\": \"single-string-not-array\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/pet",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pet"
+              ]
+            },
+            "description": "Negative: 'photoUrls' is a string instead of an array. Expected 400, actual 500 Server Error. BUG-1."
+          },
+          "response": []
+        },
+        {
+          "name": "N5 - Invalid Status Value",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Known bug: API returns 500 instead of 400 for invalid data type.",
+                  "pm.test(\"Server does not crash (no 5xx)\", () => pm.expect(pm.response.code).to.be.below(500));",
+                  "pm.test(\"Contract: invalid data should be rejected with 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Response time is below 3000 ms\", () => pm.expect(pm.response.responseTime).to.be.below(3000));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"TestPet\",\n  \"photoUrls\": [\n    \"https://example.com/photo.jpg\"\n  ],\n  \"status\": \"INVALID_STATUS_12345\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/pet",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pet"
+              ]
+            },
+            "description": "Negative: invalid enum value for 'status'. Expected 400, actual 500 Server Error. BUG-2."
+          },
+          "response": []
+        },
+        {
+          "name": "N6 - Null in Name Field",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Known issue: API accepts invalid data. By contract it should return 400.",
+                  "pm.test(\"Server does not crash (no 5xx)\", () => pm.expect(pm.response.code).to.be.below(500));",
+                  "pm.test(\"Contract: invalid data should be rejected with 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Response time is below 3000 ms\", () => pm.expect(pm.response.responseTime).to.be.below(3000));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": null,\n  \"photoUrls\": [\n    \"https://example.com/photo.jpg\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/pet",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pet"
+              ]
+            },
+            "description": "Negative: 'name' is null. Actual 200 OK (null treated as missing field)."
+          },
+          "response": []
+        },
+        {
+          "name": "N7 - Array Instead of String (name)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Known bug: API returns 500 instead of 400 for invalid data type.",
+                  "pm.test(\"Server does not crash (no 5xx)\", () => pm.expect(pm.response.code).to.be.below(500));",
+                  "pm.test(\"Contract: invalid data should be rejected with 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Response time is below 3000 ms\", () => pm.expect(pm.response.responseTime).to.be.below(3000));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": [\n    \"test\",\n    \"array\"\n  ],\n  \"photoUrls\": [\n    \"https://example.com/photo.jpg\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/pet",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pet"
+              ]
+            },
+            "description": "Negative: 'name' is an array. Expected 400, actual 500 Server Error. BUG-3."
+          },
+          "response": []
+        },
+        {
+          "name": "N8 - Object Instead of String (name)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Known bug: API returns 500 instead of 400 for invalid data type.",
+                  "pm.test(\"Server does not crash (no 5xx)\", () => pm.expect(pm.response.code).to.be.below(500));",
+                  "pm.test(\"Contract: invalid data should be rejected with 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Response time is below 3000 ms\", () => pm.expect(pm.response.responseTime).to.be.below(3000));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": {\n    \"firstName\": \"Test\"\n  },\n  \"photoUrls\": [\n    \"https://example.com/photo.jpg\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/pet",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pet"
+              ]
+            },
+            "description": "Negative: 'name' is an object. Expected 400, actual 500 Server Error. BUG-4."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Edge cases",
+      "item": [
+        {
+          "name": "E1 - Empty photoUrls Array",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response has numeric id\", () => pm.expect(pm.response.json().id).to.be.a(\"number\"));",
+                  "pm.test(\"photoUrls is an array\", () => pm.expect(pm.response.json().photoUrls).to.be.an(\"array\"));",
+                  "pm.test(\"Name is returned unchanged\", () => pm.expect(pm.response.json().name).to.eql(\"TestPet\"));",
+                  "pm.test(\"Response time is below 3000 ms\", () => pm.expect(pm.response.responseTime).to.be.below(3000));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"TestPet\",\n  \"photoUrls\": []\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/pet",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pet"
+              ]
+            },
+            "description": "Edge: empty 'photoUrls' array. Actual 200 OK."
+          },
+          "response": []
+        },
+        {
+          "name": "E2 - Very Long Name (1000 chars)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response has numeric id\", () => pm.expect(pm.response.json().id).to.be.a(\"number\"));",
+                  "pm.test(\"photoUrls is an array\", () => pm.expect(pm.response.json().photoUrls).to.be.an(\"array\"));",
+                  "pm.test(\"Name is returned unchanged\", () => pm.expect(pm.response.json().name).to.eql(\"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\"));",
+                  "pm.test(\"Response time is below 3000 ms\", () => pm.expect(pm.response.responseTime).to.be.below(3000));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\",\n  \"photoUrls\": [\n    \"https://example.com/photo.jpg\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/pet",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pet"
+              ]
+            },
+            "description": "Edge: 1000-character name. Actual 200 OK (no max length validation)."
+          },
+          "response": []
+        },
+        {
+          "name": "E3 - Special Characters in Name",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response has numeric id\", () => pm.expect(pm.response.json().id).to.be.a(\"number\"));",
+                  "pm.test(\"photoUrls is an array\", () => pm.expect(pm.response.json().photoUrls).to.be.an(\"array\"));",
+                  "pm.test(\"Name is returned unchanged\", () => pm.expect(pm.response.json().name).to.eql(\"Test!@#$%^&*()\"));",
+                  "pm.test(\"Response time is below 3000 ms\", () => pm.expect(pm.response.responseTime).to.be.below(3000));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test!@#$%^&*()\",\n  \"photoUrls\": [\n    \"https://example.com/photo.jpg\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/pet",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pet"
+              ]
+            },
+            "description": "Edge: special characters in 'name'. Actual 200 OK."
+          },
+          "response": []
+        },
+        {
+          "name": "E4 - Emoji in Name",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response has numeric id\", () => pm.expect(pm.response.json().id).to.be.a(\"number\"));",
+                  "pm.test(\"photoUrls is an array\", () => pm.expect(pm.response.json().photoUrls).to.be.an(\"array\"));",
+                  "pm.test(\"Name is returned unchanged\", () => pm.expect(pm.response.json().name).to.eql(\"Pet🐕🐈🐾\"));",
+                  "pm.test(\"Response time is below 3000 ms\", () => pm.expect(pm.response.responseTime).to.be.below(3000));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Pet🐕🐈🐾\",\n  \"photoUrls\": [\n    \"https://example.com/photo.jpg\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/pet",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pet"
+              ]
+            },
+            "description": "Edge: emoji in 'name'. Actual 200 OK (UTF-8 works)."
+          },
+          "response": []
+        },
+        {
+          "name": "E5 - Cyrillic in Name",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response has numeric id\", () => pm.expect(pm.response.json().id).to.be.a(\"number\"));",
+                  "pm.test(\"photoUrls is an array\", () => pm.expect(pm.response.json().photoUrls).to.be.an(\"array\"));",
+                  "pm.test(\"Name is returned unchanged\", () => pm.expect(pm.response.json().name).to.eql(\"Тваринка\"));",
+                  "pm.test(\"Response time is below 3000 ms\", () => pm.expect(pm.response.responseTime).to.be.below(3000));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Тваринка\",\n  \"photoUrls\": [\n    \"https://example.com/photo.jpg\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/pet",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pet"
+              ]
+            },
+            "description": "Edge: Cyrillic characters in 'name'. Actual 200 OK."
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://petstore.swagger.io/v2",
+      "type": "string"
+    }
+  ]
+}
